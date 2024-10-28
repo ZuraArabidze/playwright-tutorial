@@ -1,0 +1,110 @@
+import { test, expect } from '@playwright/test';
+
+// N1
+// Global setup for all tests (viewport and baseURL)
+test.use({
+  baseURL: 'https://www.saucedemo.com',  // Set base URL
+  viewport: { width: 1600, height: 900 } // Set browser window size
+});
+
+test.describe('Home exercise', () => {
+    // N2
+    // Before each test, navigate to the baseURL
+    test.beforeEach(async ({ page }) => {
+        await page.goto('https://www.saucedemo.com');
+    });
+
+    // N3
+    test('Display the title and url', async ({ page }) => {
+        // N3: Display the title and url
+        const title = await page.title();
+        const url = page.url();
+        console.log(`Title: ${title}`);
+        console.log(`URL: ${url}`);
+    });
+
+    // N4
+    test('Fill username field', async ({ page }) => {
+        // N4: Fill username field
+        await page.fill('#user-name', 'standard_user');
+    });
+
+    // N5
+    test('Fill password field', async ({ page }) => {
+        // N5: Fill password field
+        await page.fill('#password', 'secret_sauce');
+    });
+
+    // N6
+    test('Click login button', async ({ page }) => {
+        // N6: Click the login button
+        await page.click('#login-button');
+    });
+
+    // Step 7: Sort the page by increasing price
+    test('Sort by price low to high', async ({ page }) => {
+        // Select the sorting dropdown and choose 'Price (low to high)'
+        await page.selectOption('.product_sort_container', 'lohi');
+    });
+
+    // Step 8: Select the last product from the products on the page
+    test('Select the last product on the page', async ({ page }) => {
+        // Select the last product in the grid using XPath
+        const lastProduct = await page.locator('(//div[@class="inventory_item"])[last()]');
+        await lastProduct.click();
+    });
+
+    // Step 9: Add products with "T-shirt" in the name to cart
+    test('Add T-shirt products to cart', async ({ page }) => {
+        // Find all products with "T-shirt" in their names using XPath and click "Add to cart"
+        const tshirtProducts = await page.locator("//div[contains(text(), 'T-Shirt')]//following-sibling::button[text()='Add to cart']");
+        const count = await tshirtProducts.count();
+        for (let i = 0; i < count; i++) {
+            await tshirtProducts.nth(i).click();
+        }
+    });
+
+    // Step 10: Display the number of items in the cart
+    test('Display number of items in cart', async ({ page }) => {
+        // Get the cart counter in the top right corner and print the number of items
+        const cartCount = await page.locator('.shopping_cart_badge');
+        const itemCount = await cartCount.innerText();
+        console.log(`Number of items in the cart: ${itemCount}`);
+    });
+
+    // Step 11: Click the cart icon to go to the checkout page
+    test('Go to the cart page', async ({ page }) => {
+        // Click the cart icon
+        await page.click('.shopping_cart_link');
+        await expect(page).toHaveURL('/cart.html');
+    });
+
+    // Step 12: Click Checkout
+    test('Click Checkout', async ({ page }) => {
+        // Click the Checkout button
+        await page.click('[data-test="checkout"]');
+        await expect(page).toHaveURL('/checkout-step-one.html');
+    });
+
+    // Step 13-15: Fill out checkout information
+    test('Fill out checkout form', async ({ page }) => {
+        // Fill in First Name, Last Name, and Zip Code
+        await page.fill('[data-test="firstName"]', 'John');
+        await page.fill('[data-test="lastName"]', 'Doe');
+        await page.fill('[data-test="postalCode"]', '123');
+        await page.click('[data-test="continue"]');
+        await expect(page).toHaveURL('/checkout-step-two.html');
+    });
+
+    // Step 16: Click Finish and display success message
+    test('Finish and display success text', async ({ page }) => {
+        // Click the Finish button
+        await page.click('[data-test="finish"]');
+    });
+
+});
+
+
+// await page.locator('//*[@id="user-name"]').fill('standard_user')
+// await page.locator('input[id="password"]').fill('secret_sauce')
+// await page.locator('input[value="Login"]').click()
